@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # TimescaleDB: Veri depolama (PostgreSQL + Time-series)
+  db:
+    image: timescale/timescaledb:latest-pg15
+    container_name: tidesense-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=tidesense_secret
+      - POSTGRES_DB=tidesense
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # Eclipse Mosquitto: MQTT Broker (IoT sensör verilerini almak için)
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: tidesense-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: always
+
+volumes:
+  postgres_data:
