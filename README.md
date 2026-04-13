@@ -17,8 +17,8 @@ TideSense, gerçek zamanlı IoT verileri, astronomik hesaplamalar ve makine öğ
 2. Veritabanına `5432` portundan, MQTT broker'ına ise `1883` portundan erişebilirsiniz.
 
 ## Proje Ekibi (TideSense Ekibi)
-- Enes Nebi Kaya (Proje Yönetimi)
-- Nurullah Hançer (Backend, IoT)
+- Enes Nebi Kaya (Backend, IoT)
+- Nurullah Hançer (Proje Yönetimi)
 - Abdallah M. K. Bakhit (Frontend)
 - Hüseyin Deniz Kahya (Test/Analiz)
 - Hasan Deniz (Kalite Güvence)
