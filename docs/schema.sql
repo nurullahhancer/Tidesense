@@ -26,6 +26,37 @@ CREATE TABLE IF NOT EXISTS alert_logs (
     message     TEXT              NOT NULL,
     is_resolved BOOLEAN           DEFAULT FALSE
 );
+-- 4a. Admin Kayıtları
+CREATE TABLE IF NOT EXISTS admins (
+    adminID    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    first_name VARCHAR(25) NOT NULL,
+    last_name  VARCHAR(50) NOT NULL,
+    passwords  VARCHAR(255) NOT NULL,
+    log_time   TIMESTAMPTZ DEFAULT NOW()
+);
+-- 4b. Researcher Kayıtları
+CREATE TABLE IF NOT EXISTS researchers(
+    researcherID BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    first_name   VARCHAR(25) NOT NULL,
+    last_name    VARCHAR(50) NOT NULL,
+    passwords    VARCHAR(255) NOT NULL,
+    log_time     TIMESTAMPTZ DEFAULT NOW()
+);
+-- 4c. User Kayıtları
+CREATE TABLE IF NOT EXISTS users(
+    userID     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    first_name VARCHAR(25) NOT NULL,
+    last_name  VARCHAR(50) NOT NULL,
+    passwords  VARCHAR(255) NOT NULL,
+    log_time   TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TEST KULLANICILARINI EKLİYORUZ (Sisteme giriş yapabilmen için)
+INSERT INTO admins(first_name, last_name, passwords) VALUES ('Enes', 'Kaya', 'enes123');
+INSERT INTO researchers(first_name, last_name, passwords) VALUES ('Nurullah', 'Hançer', 'nurullah123');
+INSERT INTO users(first_name, last_name, passwords) VALUES ('Abdullah', 'Bakit', 'abdullah123');
+INSERT INTO admins(first_name, last_name, passwords) VALUES ('Huseyin', 'Kahya', 'huseyini123');
+INSERT INTO researchers(first_name, last_name, passwords) VALUES ('Hasan', 'Deniz', 'hasan123');
 
 -- Örnek İndeks (Hızlı sorgu için)
 CREATE INDEX IF NOT EXISTS idx_sensor_time ON sensor_readings (sensor_id, time DESC);
