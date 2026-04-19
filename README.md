@@ -20,13 +20,15 @@ TideSense, gerçek zamanlı IoT verileri, astronomik hesaplamalar ve makine öğ
 
 Windows
 ```bash
-  python -m venv venv
+  python -m venv venv #Uygulamanın ana klasör
 ```
 
 macOS / Linux
 ```bash
-  python3 -m venv venv
+  python3 -m venv venv #Uygulamanın ana klasör
 ```
+
+
 
 ## Proje Ekibi (TideSense Ekibi)
 - Enes Nebi Kaya (Backend, IoT)
