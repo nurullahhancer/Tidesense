@@ -19,14 +19,14 @@ TideSense, gerçek zamanlı IoT verileri, astronomik hesaplamalar ve makine öğ
 3.Python Venv kurma
 
 Windows
-'''bash
+```bash
   python -m venv venv
-'''
+```
 
 macOS / Linux
-'''bash
+```bash
   python3 -m venv venv
-'''
+```
 
 ## Proje Ekibi (TideSense Ekibi)
 - Enes Nebi Kaya (Backend, IoT)
