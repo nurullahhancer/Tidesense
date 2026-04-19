@@ -16,6 +16,18 @@ TideSense, gerçek zamanlı IoT verileri, astronomik hesaplamalar ve makine öğ
    ```
 2. Veritabanına `5432` portundan, MQTT broker'ına ise `1883` portundan erişebilirsiniz.
 
+3.Python Venv kurma
+
+Windows
+'''bash
+  python -m venv venv
+'''
+
+macOS / Linux
+'''bash
+  python3 -m venv venv
+'''
+
 ## Proje Ekibi (TideSense Ekibi)
 - Enes Nebi Kaya (Backend, IoT)
 - Nurullah Hançer (Proje Yönetimi)
