@@ -27,11 +27,8 @@ TideSense, kıyı istasyonları için gelgit, su seviyesi, ay konumu, basınç, 
 - `docs/`: mimari ve API referansı
 - `mosquitto/`: broker yapılandırması
 
-## Demo Kullanıcıları
-
-- `coastal_user` / `User123!`
-- `marine_researcher` / `Research123!`
-- `system_admin` / `Admin123!`
+## Giriş
+Sistem üzerinden veri takibi yapabilmek için giriş yapılması gerekmektedir. Kullanıcı yönetimi panelinden yeni kullanıcılar oluşturulabilir.
 
 ## Docker ile Çalıştırma
 
