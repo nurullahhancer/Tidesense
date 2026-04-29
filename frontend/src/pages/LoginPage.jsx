@@ -38,60 +38,36 @@ export default function LoginPage() {
 
   return (
     <div className="login-shell">
-      <div className="login-card">
-        <div className="login-card__hero">
+      <div className="login-card" style={{ gridTemplateColumns: "1fr 420px" }}>
+        <div className="login-card__hero" style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-start" }}>
           <div className="brand-title">
             <span className="brand-mark">
-              <Activity size={22} />
+              <Activity size={24} />
             </span>
-            <div>
-              <div>TideSense</div>
-              <div className="brand-subtitle">Ay Konumu Tabanlı Gelgit Tahmin Platformu</div>
-            </div>
+            <div style={{ fontSize: "1.8rem" }}>TideSense</div>
           </div>
-
-          <h1 className="page-title" style={{ marginTop: 28 }}>
-            Kıyı istasyonlarını, tahminleri ve risk akışını tek panelden yönetin.
+          
+          <h1 className="page-title" style={{ marginTop: 24, fontSize: "2.2rem" }}>
+            Hoş Geldiniz.
           </h1>
-          <p className="page-description">
-            Frontend yalnızca kendi backend API’sine bağlanır; dış veri önce veritabanına yazılır,
-            ardından canlı dashboard ve tahmin ekranlarına taşınır.
+          <p className="page-description" style={{ fontSize: "1.1rem", opacity: 0.9 }}>
+            Akıllı gelgit izleme ve tahmin sistemine erişmek için lütfen giriş yapın.
           </p>
-
-          <div className="hero-stat">
-            <Waves size={18} />
-            <div>
-              <strong>4 kıyı istasyonu</strong>
-              <div className="helper-text">İskenderun, İzmir, İstanbul ve Trabzon aynı akışta</div>
-            </div>
-          </div>
-
-          <div className="hero-grid">
-            <article className="card">
-              <ShieldCheck size={18} />
-              <h3 className="panel-title">JWT + RBAC</h3>
-              <p className="helper-text">User, Researcher ve Admin için ayrılmış görünüm.</p>
-            </article>
-            <article className="card">
-              <Sparkles size={18} />
-              <h3 className="panel-title">ML Tahmin</h3>
-              <p className="helper-text">RandomForest tabanlı 24 saatlik gelgit öngörüsü.</p>
-            </article>
-          </div>
         </div>
 
-        <form className="login-card__form" onSubmit={handleSubmit}>
-          <div className="stack">
-            <h2 className="panel-title" style={{ fontSize: "1.6rem" }}>
-              Sisteme giriş yap
+        <form className="login-card__form" onSubmit={handleSubmit} style={{ justifyContent: "center" }}>
+          <div className="stack" style={{ marginBottom: 12 }}>
+            <h2 className="panel-title" style={{ fontSize: "1.8rem" }}>
+              Giriş Yap
             </h2>
-            <p className="helper-text">Demo kullanıcıları hazır yüklendi.</p>
+            <p className="helper-text">Lütfen kullanıcı bilgilerinizi giriniz.</p>
           </div>
 
           <label className="stack">
-            <span>Kullanıcı adı</span>
+            <span style={{ fontWeight: 600 }}>Kullanıcı Adı</span>
             <input
               className="input"
+              placeholder="Kullanıcı adınızı yazın"
               value={form.username}
               onChange={(event) =>
                 setForm((current) => ({ ...current, username: event.target.value }))
@@ -100,11 +76,12 @@ export default function LoginPage() {
           </label>
 
           <label className="stack">
-            <span>Şifre</span>
+            <span style={{ fontWeight: 600 }}>Şifre</span>
             <div style={{ position: "relative" }}>
               <input
                 type="password"
                 className="input"
+                placeholder="••••••••"
                 value={form.password}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, password: event.target.value }))
@@ -114,29 +91,11 @@ export default function LoginPage() {
             </div>
           </label>
 
-          {error ? <div className="badge badge--critical">{error}</div> : null}
+          {error ? <div className="badge badge--critical" style={{ width: "100%", padding: "10px" }}>{error}</div> : null}
 
-          <button className="button button--primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
+          <button className="button button--primary" type="submit" disabled={isSubmitting} style={{ height: "48px", marginTop: 12 }}>
+            {isSubmitting ? "Giriş yapılıyor..." : "Sisteme Giriş Yap"}
           </button>
-
-          <div className="stack">
-            <span className="muted">Hazır demo hesapları</span>
-            <div className="table-list">
-              {demoAccounts.map((account) => (
-                <button
-                  key={account.username}
-                  type="button"
-                  className="button button--ghost"
-                  onClick={() =>
-                    setForm({ username: account.username, password: account.password })
-                  }
-                >
-                  {account.role}: {account.username}
-                </button>
-              ))}
-            </div>
-          </div>
         </form>
       </div>
     </div>
