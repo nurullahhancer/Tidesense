@@ -1,0 +1,123 @@
+services:
+  db:
+    image: timescale/timescaledb:2.15.3-pg15
+    container_name: tidesense-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tidesense_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-tidesense}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/sql/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tidesense}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - tidesense-network
+
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: tidesense-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+    networks:
+      - tidesense-network
+
+
+  backend:
+    build:
+      context: ./backend
+    container_name: tidesense-backend
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: tidesense_secret
+      MQTT_HOST: mqtt
+      SCHEDULER_ENABLED: "false"
+      MODEL_ARTIFACTS_DIR: /app/app/ml_artifacts
+    ports:
+      - "8000:8000"
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+    depends_on:
+      db:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+    networks:
+      - tidesense-network
+    volumes:
+      - ml_artifacts:/app/app/ml_artifacts
+
+  worker:
+    build:
+      context: ./backend
+    container_name: tidesense-worker
+    command: ["python", "worker.py"]
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: tidesense_secret
+      MQTT_HOST: mqtt
+      SCHEDULER_ENABLED: "true"
+      MODEL_ARTIFACTS_DIR: /app/app/ml_artifacts
+    depends_on:
+      db:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - tidesense-network
+    volumes:
+      - ml_artifacts:/app/app/ml_artifacts
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+        VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost:8000}
+    container_name: tidesense-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - tidesense-network
+
+  simulator:
+    build:
+      context: ./iot_simulator
+    container_name: tidesense-simulator
+    environment:
+      MQTT_BROKER: mqtt
+      MQTT_PORT: 1883
+      MQTT_TOPIC_PREFIX: tidesense
+    depends_on:
+      mqtt:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - tidesense-network
+
+networks:
+  tidesense-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  ml_artifacts:

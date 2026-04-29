@@ -1,0 +1,46 @@
+# Environments
+.env
+.env.local
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node.js
+node_modules/
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+backend/app/ml_artifacts/
+
+# Docker
+mosquitto/data/
+mosquitto/log/
+postgres_data/
+
+# Log files
+*.log
+backend/*.log
+
+# Project Specific
+SPMP raporu önerisi (1).docx
+SPMP raporu önerisi (1).pdf
+*.pyc
+.DS_Store
