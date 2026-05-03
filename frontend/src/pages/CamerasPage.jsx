@@ -96,7 +96,7 @@ export default function CamerasPage() {
         </div>
       </div>
 
-      <div className="camera-grid" style={{ marginTop: "12px" }}>
+      <div className="camera-grid">
         {cameras.map((camera) => (
           <CameraView key={camera.station.id} camera={camera} />
         ))}
@@ -106,47 +106,47 @@ export default function CamerasPage() {
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
           background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999,
+          padding: "16px"
         }}>
-          <div className="card" style={{ width: "400px", padding: "24px", position: "relative" }}>
+          <div className="card" style={{ width: "100%", maxWidth: "420px", padding: "20px", position: "relative" }}>
             <button
               onClick={() => setIsModalOpen(false)}
-              style={{ position: "absolute", top: "16px", right: "16px", background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
+              style={{ position: "absolute", top: "12px", right: "12px", background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
             >
               <X size={20} />
             </button>
-            <h3 style={{ margin: "0 0 16px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>
+            <h3 style={{ margin: "0 0 16px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "8px", fontSize: "1.2rem" }}>
               <Plus size={18} /> Yeni Kamera Ekle
             </h3>
             
             <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <div style={{ display: "flex", gap: "12px" }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Enlem (Lat)</label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Enlem</label>
                   <input required type="number" step="any" value={formData.latitude} onChange={(e) => setFormData({ ...formData, latitude: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Boylam (Lng)</label>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Boylam</label>
                   <input required type="number" step="any" value={formData.longitude} onChange={(e) => setFormData({ ...formData, longitude: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
                 </div>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "4px" }}>İstasyon Kodu</label>
-                <input required type="text" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
+                <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px" }}>İstasyon Kodu ve Adı</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: "10px" }}>
+                  <input required type="text" placeholder="Kod" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
+                  <input required type="text" placeholder="İsim" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
+                </div>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "4px" }}>İstasyon Adı</label>
-                <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Şehir</label>
+                <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Şehir</label>
                 <input required type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Kamera Snapshot URL</label>
+                <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px" }}>Kamera Snapshot URL</label>
                 <input type="url" value={formData.snapshot_url} onChange={(e) => setFormData({ ...formData, snapshot_url: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-soft)", background: "var(--bg-primary)", color: "var(--text-primary)" }} />
               </div>
-              <button type="submit" style={{ marginTop: "8px", padding: "10px", borderRadius: "6px", border: "none", background: "var(--accent-primary)", color: "white", fontWeight: "600", cursor: "pointer" }}>Kaydet ve Ekle</button>
+              <button type="submit" style={{ marginTop: "8px", padding: "12px", borderRadius: "6px", border: "none", background: "var(--accent-primary)", color: "white", fontWeight: "600", cursor: "pointer" }}>Kaydet ve Ekle</button>
             </form>
           </div>
         </div>

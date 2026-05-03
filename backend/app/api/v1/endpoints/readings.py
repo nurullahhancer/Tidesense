@@ -32,7 +32,7 @@ def get_reading_history(
 ) -> ReadingHistoryResponse | PlainTextResponse:
     station, rows = reading_history(db, station_id=station_id, start_at=start_at, end_at=end_at, limit=limit)
     if export_format == "csv":
-        if current_user.role not in {UserRole.RESEARCHER.value, UserRole.ADMIN.value}:
+        if current_user.role not in {UserRole.RESEARCHER.value, UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value}:
             from fastapi import HTTPException
 
             raise HTTPException(status_code=403, detail="CSV export requires researcher or admin role")
@@ -81,7 +81,7 @@ def get_noaa_readings(
 ) -> dict:
     refresh_result = None
     if refresh:
-        if current_user.role != UserRole.ADMIN.value:
+        if current_user.role not in {UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value}:
             from fastapi import HTTPException
 
             raise HTTPException(status_code=403, detail="Refresh requires admin role")

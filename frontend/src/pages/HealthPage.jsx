@@ -37,10 +37,6 @@ export default function HealthPage() {
             Kayıt merkezi, canlı bağlantılar, yapay zeka ve otomatik görevlerin anlık sağlık durumu.
           </p>
         </div>
-        <button className="button button--secondary" onClick={handleRefreshExternal}>
-          <RefreshCw size={16} />
-          Dış Veriyi Yenile
-        </button>
       </div>
 
       <HealthPanel health={health} />

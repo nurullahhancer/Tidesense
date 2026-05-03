@@ -34,7 +34,7 @@ export default function App() {
           <Route
             path="/predictions"
             element={
-              <ProtectedRoute allowedRoles={["user", "researcher", "admin"]}>
+              <ProtectedRoute allowedRoles={["user", "researcher", "admin", "super_admin"]}>
                 <PredictionsPage />
               </ProtectedRoute>
             }
@@ -42,7 +42,7 @@ export default function App() {
           <Route
             path="/health"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
                 <HealthPage />
               </ProtectedRoute>
             }
@@ -50,7 +50,7 @@ export default function App() {
           <Route
             path="/export"
             element={
-              <ProtectedRoute allowedRoles={["researcher", "admin"]}>
+              <ProtectedRoute allowedRoles={["researcher", "admin", "super_admin"]}>
                 <ExportPage />
               </ProtectedRoute>
             }
@@ -58,7 +58,7 @@ export default function App() {
           <Route
             path="/users"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
                 <UsersPage />
               </ProtectedRoute>
             }

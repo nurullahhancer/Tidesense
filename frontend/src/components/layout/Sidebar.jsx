@@ -1,5 +1,4 @@
 import {
-  Activity,
   Bell,
   Camera,
   Gauge,
@@ -18,28 +17,29 @@ import { NavLink } from "react-router-dom";
 import { roleLabel } from "../../utils/formatters.js";
 
 const navigation = [
-  { to: "/dashboard", label: "Risk Durumu", icon: ShieldAlert, roles: ["user", "researcher", "admin"] },
-  { to: "/pressure", label: "Basınç", icon: Gauge, roles: ["user", "researcher", "admin"] },
-  { to: "/temperature", label: "Sıcaklık", icon: Thermometer, roles: ["user", "researcher", "admin"] },
-  { to: "/cameras", label: "Kameralar", icon: Camera, roles: ["user", "researcher", "admin"] },
-  { to: "/moon", label: "Ay Durumu", icon: MoonStar, roles: ["user", "researcher", "admin"] },
-  { to: "/map", label: "Canlı Harita", icon: Map, roles: ["user", "researcher", "admin"] },
-  { to: "/predictions", label: "Tahminler", icon: Waves, roles: ["user", "researcher", "admin"] },
-  { to: "/alerts", label: "Alarm Geçmişi", icon: Bell, roles: ["user", "researcher", "admin"] },
-  { to: "/users", label: "Kullanıcılar", icon: UserCog, roles: ["admin"] },
-  { to: "/health", label: "Sistem Sağlığı", icon: HeartPulse, roles: ["admin"] },
-  { to: "/export", label: "Veri İndir", icon: Download, roles: ["researcher", "admin"] },
+  { to: "/dashboard", label: "Risk Durumu", icon: ShieldAlert, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/pressure", label: "Basınç", icon: Gauge, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/temperature", label: "Sıcaklık", icon: Thermometer, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/cameras", label: "Kameralar", icon: Camera, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/moon", label: "Ay Durumu", icon: MoonStar, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/map", label: "Canlı Harita", icon: Map, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/predictions", label: "Tahminler", icon: Waves, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/alerts", label: "Alarm Geçmişi", icon: Bell, roles: ["user", "researcher", "admin", "super_admin"] },
+  { to: "/users", label: "Kullanıcılar", icon: UserCog, roles: ["admin", "super_admin"] },
+  { to: "/health", label: "Sistem Sağlığı", icon: HeartPulse, roles: ["admin", "super_admin"] },
+  { to: "/export", label: "Veri İndir", icon: Download, roles: ["researcher", "admin", "super_admin"] },
 ];
 
-export default function Sidebar({ user, onLogout }) {
+export default function Sidebar({ user, onLogout, isOpen, onClose }) {
   const items = navigation.filter((item) => item.roles.includes(user.role));
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? "sidebar--open" : ""}`}>
       <div className="sidebar__header">
         <div className="brand-title">
           <span className="brand-mark">
-            <Activity size={22} />
+            <MoonStar size={22} />
+            <span className="brand-mark__flow" />
           </span>
           <div>
             <div>TideSense</div>
@@ -53,6 +53,7 @@ export default function Sidebar({ user, onLogout }) {
           <NavLink
             key={item.to}
             to={item.to}
+            onClick={onClose}
             className={({ isActive }) =>
               `nav-link${isActive ? " nav-link--active" : ""}`
             }
@@ -67,8 +68,8 @@ export default function Sidebar({ user, onLogout }) {
         <div className="split">
           <div className="split">
             <div className="avatar">{user.username[0]?.toUpperCase()}</div>
-            <div className="stack">
-              <strong>{user.username}</strong>
+            <div className="stack" style={{ minWidth: 0 }}>
+              <strong style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.username}</strong>
               <span className="muted">{roleLabel(user.role)}</span>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Download, RefreshCw, TrendingUp, Target, Activity, BarChart2 } from "lucide-react";
+import { Download, TrendingUp, Target, Activity, BarChart2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -77,14 +77,13 @@ export default function PredictionsPage() {
     }
   }, [stations, localStation]);
 
-  async function load(refresh = false) {
+  async function load() {
     if (!localStation) return;
     setLoading(true);
     try {
       const [predictionPayload, historyPayload] = await Promise.all([
         predictionApi.list(token, {
           station_id: localStation.id,
-          ...(refresh ? { refresh: "true" } : {}),
         }),
         readingsApi.external(token, { station_id: localStation.id, limit: 24 }),
       ]);
@@ -96,7 +95,7 @@ export default function PredictionsPage() {
   }
 
   useEffect(() => {
-    load(false);
+    load();
   }, [token, localStation]);
 
   async function handleExport() {
@@ -170,12 +169,6 @@ export default function PredictionsPage() {
           </p>
         </div>
         <div className="inline-actions">
-          {user?.role !== "user" && (
-            <button className="button button--secondary" onClick={() => load(true)} disabled={loading}>
-              <RefreshCw size={16} style={loading ? { animation: "spin 1s linear infinite" } : {}} />
-              {loading ? "Yükleniyor..." : "Tahmini Yenile"}
-            </button>
-          )}
           {user?.role !== "user" && (
             <button className="button button--ghost" onClick={handleExport}>
               <Download size={16} />

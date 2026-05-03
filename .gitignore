@@ -40,6 +40,7 @@ postgres_data/
 backend/*.log
 
 # Project Specific
+npm/
 SPMP raporu önerisi (1).docx
 SPMP raporu önerisi (1).pdf
 *.pyc

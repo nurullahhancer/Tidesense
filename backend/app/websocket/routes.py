@@ -13,7 +13,9 @@ async def live_websocket(websocket: WebSocket, token: str = Query(...)) -> None:
         await websocket.close(code=1008)
         return
 
-    await connection_manager.connect(websocket)
+    user_id = payload.get("id")
+    await connection_manager.connect(websocket, user_id=user_id)
+    await connection_manager.broadcast_presence()
     await websocket.send_json(
         {
             "type": "connection",
@@ -30,4 +32,5 @@ async def live_websocket(websocket: WebSocket, token: str = Query(...)) -> None:
             if message == "ping":
                 await websocket.send_json({"type": "pong", "payload": {}})
     except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
+        connection_manager.disconnect(websocket, user_id=user_id)
+        await connection_manager.broadcast_presence()

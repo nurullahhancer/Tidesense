@@ -1,40 +1,156 @@
-import { KeyRound, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Activity,
+  Clock,
+  Globe2,
+  Info,
+  KeyRound,
+  MonitorSmartphone,
+  Network,
+  ShieldCheck,
+  Trash2,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
 import { usersApi } from "../services/api.js";
 import { formatDateTime, roleLabel } from "../utils/formatters.js";
 
-const roleOptions = ["user", "researcher", "admin"];
+const ALL_ROLES = ["user", "researcher", "admin", "super_admin"];
+const MANAGEABLE_ROLES = ["user", "researcher", "admin"];
+
+function deviceValue(value, fallback = "Henüz kayıt yok") {
+  return value || fallback;
+}
+
+function UserDeviceDetails({ userItem }) {
+  const detailItems = [
+    {
+      label: "Cihaz",
+      value: deviceValue(userItem.last_login_device),
+      icon: MonitorSmartphone,
+    },
+    {
+      label: "İşletim sistemi",
+      value: deviceValue(userItem.last_login_os),
+      icon: MonitorSmartphone,
+    },
+    {
+      label: "Tarayıcı",
+      value: deviceValue(userItem.last_login_browser),
+      icon: Globe2,
+    },
+    {
+      label: "IP adresi",
+      value: deviceValue(userItem.last_login_ip),
+      icon: Network,
+    },
+    {
+      label: "Son giriş",
+      value: userItem.last_login_at ? formatDateTime(userItem.last_login_at) : "Henüz kayıt yok",
+      icon: Clock,
+    },
+  ];
+
+  return (
+    <div className="user-device-panel">
+      <div className="user-device-panel__header">
+        <div className="device-orbit" aria-hidden="true">
+          <MonitorSmartphone size={20} />
+          <span />
+        </div>
+        <div>
+          <strong>{userItem.username} giriş bilgileri</strong>
+          <p className="helper-text">
+            Son başarılı girişte yakalanan cihaz ve ağ özeti.
+          </p>
+        </div>
+      </div>
+
+      <div className="device-detail-grid">
+        {detailItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div className="device-detail-card" key={item.label}>
+              <Icon size={16} />
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="device-user-agent">
+        <span>User-Agent</span>
+        <code>{deviceValue(userItem.last_login_user_agent)}</code>
+      </div>
+    </div>
+  );
+}
 
 export default function UsersPage() {
-  const { token, user: currentUser } = useOutletContext();
+  const { token, user: currentUser, presenceVersion, activeUserIds } = useOutletContext();
   const [users, setUsers] = useState([]);
   const [form, setForm] = useState({ username: "", password: "", role: "user" });
+  const [expandedDeviceUserId, setExpandedDeviceUserId] = useState(null);
+
+  const usersWithLivePresence = useMemo(() => {
+    if (!Array.isArray(activeUserIds)) {
+      return users;
+    }
+
+    const activeUserIdSet = new Set(activeUserIds);
+    return users.map((item) => ({
+      ...item,
+      is_active: activeUserIdSet.has(item.id),
+    }));
+  }, [activeUserIds, users]);
+
+  const activeCount = useMemo(
+    () => usersWithLivePresence.filter((item) => item.is_active).length,
+    [usersWithLivePresence],
+  );
+
+  const canViewLoginDetails = currentUser.role === "super_admin";
+
+  const roleOptions = useMemo(() => {
+    if (currentUser.role === "super_admin") {
+      return MANAGEABLE_ROLES;
+    }
+    return ["user", "researcher"];
+  }, [currentUser.role]);
+
   const [passwordDrafts, setPasswordDrafts] = useState({});
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const roleCounts = useMemo(
     () =>
-      users.reduce(
+      usersWithLivePresence.reduce(
         (counts, item) => ({
           ...counts,
           [item.role]: (counts[item.role] ?? 0) + 1,
         }),
         {},
       ),
-    [users],
+    [usersWithLivePresence],
   );
 
-  async function loadUsers() {
+  const loadUsers = useCallback(async () => {
     const payload = await usersApi.list(token);
     setUsers(payload);
-  }
+  }, [token]);
 
   useEffect(() => {
     loadUsers();
-  }, [token]);
+  }, [loadUsers, presenceVersion]);
+
+  useEffect(() => {
+    if (!canViewLoginDetails) {
+      setExpandedDeviceUserId(null);
+    }
+  }, [canViewLoginDetails]);
 
   function setStatus(nextMessage, nextError = "") {
     setMessage(nextMessage);
@@ -49,7 +165,7 @@ export default function UsersPage() {
       setStatus("Kullanıcı oluşturuldu.");
       await loadUsers();
     } catch (requestError) {
-      setStatus("", "Kullanıcı oluşturulamadı. Kullanıcı adı daha önce alınmış olabilir.");
+      setStatus("", "Kullanıcı oluşturulamadı. Yetersiz yetki veya kullanıcı adı alınmış olabilir.");
     }
   }
 
@@ -65,8 +181,8 @@ export default function UsersPage() {
 
   async function handlePasswordReset(userId) {
     const password = passwordDrafts[userId] ?? "";
-    if (password.length < 8) {
-      setStatus("", "Yeni şifre en az 8 karakter olmalı.");
+    if (password.length < 6) {
+      setStatus("", "Yeni şifre en az 6 karakter olmalı.");
       return;
     }
 
@@ -113,8 +229,16 @@ export default function UsersPage() {
         </span>
       </div>
 
-      <div className="grid grid--cards">
-        {roleOptions.map((role) => (
+      <div className="grid grid--cards" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+        <article className="stat-card stat-card--teal" style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}>
+          <div className="split">
+            <Activity size={18} />
+            <strong>Aktif Kullanıcılar</strong>
+          </div>
+          <div className="metric">{activeCount}</div>
+          <p className="helper-text">Şu an sistemde çevrimiçi olanlar</p>
+        </article>
+        {ALL_ROLES.map((role) => (
           <article key={role} className={`color-card color-card--${role}`}>
             <div className="split">
               <ShieldCheck size={18} />
@@ -122,11 +246,13 @@ export default function UsersPage() {
             </div>
             <div className="metric">{roleCounts[role] ?? 0}</div>
             <p className="helper-text">
-              {role === "admin"
-                ? "Sistem ve kullanıcı yönetimi"
-                : role === "researcher"
-                  ? "Tahminler ve veri dışa aktarımı"
-                  : "Dashboard izleme yetkisi"}
+              {role === "super_admin"
+                ? "Sistem sahibi (Ana Admin)"
+                : role === "admin"
+                  ? "Kullanıcı yönetimi yetkisi"
+                  : role === "researcher"
+                    ? "Tahminler ve veri yönetimi"
+                    : "Dashboard izleme yetkisi"}
             </p>
           </article>
         ))}
@@ -137,7 +263,7 @@ export default function UsersPage() {
           <div className="split" style={{ marginBottom: 18 }}>
             <div>
               <h3 className="panel-title">Yeni Kullanıcı</h3>
-              <p className="helper-text">Demo veya sunum için hızlı hesap oluştur.</p>
+              <p className="helper-text">Sisteme yeni bir personel veya araştırmacı ekle.</p>
             </div>
             <UserPlus size={22} />
           </div>
@@ -161,7 +287,7 @@ export default function UsersPage() {
                 <input
                   className="input"
                   required
-                  minLength={8}
+                  minLength={6}
                   type="password"
                   value={form.password}
                   onChange={(event) =>
@@ -196,9 +322,19 @@ export default function UsersPage() {
         <section className="card profile-card">
           <p className="eyebrow">Aktif Oturum</p>
           <div className="profile-card__main">
-            <div className="avatar avatar--large">{currentUser.username[0]?.toUpperCase()}</div>
+            <div className="active-profile-avatar">
+              <span className="active-profile-avatar__ring" />
+              <div className="avatar avatar--large">{currentUser.username[0]?.toUpperCase()}</div>
+            </div>
             <div>
-              <h3 className="panel-title">{currentUser.username}</h3>
+              <div className="user-name-row">
+                <h3 className="panel-title">{currentUser.username}</h3>
+                <span className="active-session-badge" title="Aktif oturum">
+                  <span className="active-session-badge__wave" />
+                  <Activity size={12} />
+                  Aktif
+                </span>
+              </div>
               <p className="helper-text">{roleLabel(currentUser.role)} yetkisiyle yönetim panelindesin.</p>
             </div>
           </div>
@@ -238,23 +374,64 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((userItem) => {
-                const isMainAdmin = userItem.username === "tidesense";
+              {usersWithLivePresence.map((userItem) => {
+                const isTargetSuper = userItem.role === "super_admin";
                 const isSelf = userItem.id === currentUser.id;
-                const amIMainAdmin = currentUser.username === "tidesense";
-                const cannotEditRole = isSelf || (isMainAdmin && !amIMainAdmin);
-                const cannotDelete = isSelf || (isMainAdmin && !amIMainAdmin);
-                const cannotReset = isMainAdmin && !amIMainAdmin;
+                const iAmSuper = currentUser.role === "super_admin";
+                const isProtectedAdmin = !iAmSuper && userItem.role === "admin";
+
+                const cannotEditRole = isSelf || (isTargetSuper && !iAmSuper) || isProtectedAdmin;
+                const cannotDelete = isSelf || (isTargetSuper && !iAmSuper) || isProtectedAdmin;
+                const cannotReset = (isTargetSuper && !iAmSuper) || isProtectedAdmin;
+
+                const currentEditOptions = iAmSuper ? MANAGEABLE_ROLES : ["user", "researcher"];
 
                 return (
-                <tr key={userItem.id}>
+                <Fragment key={userItem.id}>
+                <tr className={isSelf ? "user-row user-row--active" : "user-row"}>
                   <td data-label="Kullanıcı">
                     <div className="user-cell">
-                      <div className="avatar">{userItem.username[0]?.toUpperCase()}</div>
+                      <div className="user-avatar">
+                        <div className="avatar">{userItem.username[0]?.toUpperCase()}</div>
+                        {userItem.is_active && (
+                          <span className="avatar-status-dot status-dot--online" />
+                        )}
+                      </div>
                       <div>
-                        <strong>{userItem.username}</strong>
+                        <div className="user-name-row">
+                          <strong>{userItem.username}</strong>
+                          {canViewLoginDetails ? (
+                            <button
+                              className={`about-button${
+                                expandedDeviceUserId === userItem.id ? " about-button--active" : ""
+                              }`}
+                              type="button"
+                              aria-expanded={expandedDeviceUserId === userItem.id}
+                              onClick={() =>
+                                setExpandedDeviceUserId((current) =>
+                                  current === userItem.id ? null : userItem.id,
+                                )
+                              }
+                            >
+                              <Info size={14} />
+                              Hakkında
+                            </button>
+                          ) : null}
+                          {isSelf ? (
+                            <span className="active-session-badge" title="Aktif oturum">
+                              <span className="active-session-badge__wave" />
+                              <Activity size={12} />
+                              Aktif
+                            </span>
+                          ) : userItem.is_active ? (
+                            <span className="online-badge">
+                              <span className="online-badge__dot" />
+                              Online
+                            </span>
+                          ) : null}
+                        </div>
                         {isSelf ? <p className="helper-text">Aktif hesap</p> : null}
-                        {isMainAdmin ? <p className="helper-text" style={{ color: "#f59e0b" }}>Ana Admin</p> : null}
+                        {isTargetSuper ? <p className="helper-text" style={{ color: "#f59e0b" }}>Ana Admin</p> : null}
                       </div>
                     </div>
                   </td>
@@ -265,11 +442,16 @@ export default function UsersPage() {
                       disabled={cannotEditRole}
                       onChange={(event) => handleRoleChange(userItem.id, event.target.value)}
                     >
-                      {roleOptions.map((role) => (
-                        <option key={role} value={role}>
-                          {roleLabel(role)}
-                        </option>
-                      ))}
+                      {/* If we can't edit, just show current role */}
+                      {cannotEditRole ? (
+                        <option value={userItem.role}>{roleLabel(userItem.role)}</option>
+                      ) : (
+                        currentEditOptions.map((role) => (
+                          <option key={role} value={role}>
+                            {roleLabel(role)}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </td>
                   <td data-label="Oluşturulma">{formatDateTime(userItem.created_at)}</td>
@@ -278,7 +460,7 @@ export default function UsersPage() {
                       <input
                         className="input input--compact"
                         type="password"
-                        minLength={8}
+                        minLength={6}
                         placeholder="Yeni şifre"
                         disabled={cannotReset}
                         value={passwordDrafts[userItem.id] ?? ""}
@@ -312,6 +494,14 @@ export default function UsersPage() {
                     </button>
                   </td>
                 </tr>
+                {canViewLoginDetails && expandedDeviceUserId === userItem.id ? (
+                  <tr className="user-detail-row">
+                    <td colSpan={5}>
+                      <UserDeviceDetails userItem={userItem} />
+                    </td>
+                  </tr>
+                ) : null}
+                </Fragment>
                 );
               })}
             </tbody>

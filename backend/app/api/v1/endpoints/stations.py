@@ -42,7 +42,7 @@ def get_station(station_id: int, db: Session = Depends(get_db)) -> StationDetail
 def create_station(
     payload: StationCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)),
 ) -> StationDetailResponse:
     existing = db.query(Station).filter(Station.code == payload.code).first()
     if existing:

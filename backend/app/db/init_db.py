@@ -49,6 +49,18 @@ EXPECTED_TABLE_COLUMNS = {
     },
 }
 
+USER_COMPAT_COLUMNS = {
+    "failed_attempts": "INTEGER DEFAULT 0",
+    "lockout_until": "TIMESTAMPTZ",
+    "is_blocked": "BOOLEAN DEFAULT FALSE",
+    "last_login_at": "TIMESTAMPTZ",
+    "last_login_ip": "VARCHAR(64)",
+    "last_login_user_agent": "VARCHAR(512)",
+    "last_login_device": "VARCHAR(128)",
+    "last_login_os": "VARCHAR(128)",
+    "last_login_browser": "VARCHAR(128)",
+}
+
 
 def repair_legacy_schema() -> None:
     inspector = inspect(engine)
@@ -83,6 +95,14 @@ def repair_legacy_schema() -> None:
             existing_tables.discard(table_name)
 
 
+def ensure_user_compat_columns() -> None:
+    with engine.begin() as connection:
+        for column_name, column_type in USER_COMPAT_COLUMNS.items():
+            connection.execute(
+                text(f'ALTER TABLE "users" ADD COLUMN IF NOT EXISTS {column_name} {column_type}')
+            )
+
+
 def ensure_timescaledb_features() -> None:
     with engine.begin() as connection:
         try:
@@ -105,6 +125,7 @@ def ensure_timescaledb_features() -> None:
 def create_database_schema() -> None:
     repair_legacy_schema()
     Base.metadata.create_all(bind=engine)
+    ensure_user_compat_columns()
     ensure_timescaledb_features()
     logger.info("SQLAlchemy metadata ensured")
 

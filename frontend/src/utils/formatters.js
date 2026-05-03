@@ -18,6 +18,7 @@ export function roleLabel(role) {
     user: "User",
     researcher: "Researcher",
     admin: "Admin",
+    super_admin: "Ana Admin",
   }[role] ?? role;
 }
 

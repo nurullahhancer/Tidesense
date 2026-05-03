@@ -27,7 +27,7 @@ def get_predictions(
     current_user: User = Depends(get_current_user),
 ) -> PredictionListResponse:
     if refresh or force_retrain:
-        if current_user.role not in {UserRole.RESEARCHER.value, UserRole.ADMIN.value}:
+        if current_user.role not in {UserRole.RESEARCHER.value, UserRole.ADMIN.value, UserRole.SUPER_ADMIN.value}:
             from fastapi import HTTPException
             raise HTTPException(status_code=403, detail="Refresh/retrain requires researcher or admin role")
         if station_id:

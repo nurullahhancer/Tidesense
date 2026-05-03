@@ -47,17 +47,29 @@ def seed_stations(db: Session) -> None:
 
 
 def seed_users(db: Session) -> None:
-    existing_usernames = set(db.scalars(select(User.username)).all())
+    existing_users = {user.username: user for user in db.scalars(select(User)).all()}
     for user_payload in DEMO_USERS:
-        if user_payload["username"] in existing_usernames:
-            continue
-        db.add(
-            User(
-                username=user_payload["username"],
-                password_hash=get_password_hash(user_payload["password"]),
-                role=user_payload["role"],
+        user = existing_users.get(user_payload["username"])
+        if user is None:
+            db.add(
+                User(
+                    username=user_payload["username"],
+                    password_hash=get_password_hash(user_payload["password"]),
+                    role=user_payload["role"],
+                    failed_attempts=0,
+                    is_blocked=False
+                )
             )
-        )
+        else:
+            # Update password and role if needed
+            user.password_hash = get_password_hash(user_payload["password"])
+            user.role = user_payload["role"]
+            # Ensure new fields are set for existing users
+            if user.failed_attempts is None:
+                user.failed_attempts = 0
+            if user.is_blocked is None:
+                user.is_blocked = False
+            
     db.commit()
 
 

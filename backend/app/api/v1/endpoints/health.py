@@ -16,7 +16,7 @@ router = APIRouter(tags=["health"])
     summary="Sistem sağlık özetini döndürür",
 )
 def get_health(
-    _: object = Depends(require_roles(UserRole.ADMIN)),
+    _: object = Depends(require_roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)),
     db: Session = Depends(get_db),
 ) -> HealthResponse:
     return HealthResponse(**collect_health_snapshot(db))

@@ -5,6 +5,7 @@ class UserRole(str, Enum):
     USER = "user"
     RESEARCHER = "researcher"
     ADMIN = "admin"
+    SUPER_ADMIN = "super_admin"
 
 
 class RiskSeverity(str, Enum):
@@ -25,9 +26,14 @@ DEMO_USERS = [
         "role": UserRole.RESEARCHER.value,
     },
     {
+        "username": "admin",
+        "password": "123456",
+        "role": UserRole.ADMIN.value,
+    },
+    {
         "username": "tidesense",
         "password": "tidesense123",
-        "role": UserRole.ADMIN.value,
+        "role": UserRole.SUPER_ADMIN.value,
     },
 ]
 

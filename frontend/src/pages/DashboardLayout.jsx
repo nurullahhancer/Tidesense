@@ -15,6 +15,9 @@ export default function DashboardLayout() {
   const [alerts, setAlerts] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [presenceVersion, setPresenceVersion] = useState(0);
+  const [activeUserIds, setActiveUserIds] = useState(null);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -23,6 +26,14 @@ export default function DashboardLayout() {
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
   };
 
   async function refreshOverview() {
@@ -47,6 +58,10 @@ export default function DashboardLayout() {
 
   useEffect(() => {
     refreshOverview();
+
+    // Auto-refresh every 5 seconds
+    const interval = setInterval(refreshOverview, 5000);
+    return () => clearInterval(interval);
   }, [token]);
 
   const socketStatus = useLiveSocket({
@@ -90,6 +105,10 @@ export default function DashboardLayout() {
           ...current,
         ]);
       }
+      if (event.type === "presence") {
+        setActiveUserIds(event.payload?.active_user_ids ?? []);
+        setPresenceVersion((current) => current + 1);
+      }
     },
   });
 
@@ -98,7 +117,16 @@ export default function DashboardLayout() {
 
   return (
     <div className="page-shell">
-      <Sidebar user={user} onLogout={logout} />
+      <Sidebar
+        user={user}
+        onLogout={logout}
+        isOpen={isSidebarOpen}
+        onClose={closeSidebar}
+      />
+
+      {isSidebarOpen && (
+        <div className="sidebar-overlay" onClick={closeSidebar} />
+      )}
 
       <main className="main-content">
         <Topbar
@@ -110,6 +138,7 @@ export default function DashboardLayout() {
           socketStatus={socketStatus}
           theme={theme}
           onToggleTheme={toggleTheme}
+          onToggleSidebar={toggleSidebar}
         />
 
         <div className="content-panel">
@@ -124,6 +153,8 @@ export default function DashboardLayout() {
               alerts,
               refreshOverview,
               socketStatus,
+              presenceVersion,
+              activeUserIds,
               isRefreshing,
               theme,
               toggleTheme,

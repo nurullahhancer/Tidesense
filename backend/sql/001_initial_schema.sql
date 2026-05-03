@@ -4,7 +4,17 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(64) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(32) NOT NULL CHECK (role IN ('user', 'researcher', 'admin')),
+    role VARCHAR(32) NOT NULL CHECK (role IN ('user', 'researcher', 'admin', 'super_admin')),
+    failed_attempts INTEGER DEFAULT 0,
+    lockout_until TIMESTAMPTZ,
+    is_blocked BOOLEAN DEFAULT FALSE,
+    last_login_at TIMESTAMPTZ,
+    last_login_ip VARCHAR(64),
+    last_login_user_agent VARCHAR(512),
+    last_login_device VARCHAR(128),
+    last_login_device_model VARCHAR(128),
+    last_login_os VARCHAR(128),
+    last_login_browser VARCHAR(128),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

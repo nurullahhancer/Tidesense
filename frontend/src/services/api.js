@@ -1,8 +1,17 @@
+function getDefaultApiBaseUrl() {
+  if (typeof window === "undefined") {
+    return "http://localhost:8000/api/v1";
+  }
+
+  const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+  return `${protocol}//${window.location.hostname}:8000/api/v1`;
+}
+
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
+  import.meta.env.VITE_API_BASE_URL || getDefaultApiBaseUrl();
 
 const WS_BASE_URL =
-  import.meta.env.VITE_WS_BASE_URL ??
+  import.meta.env.VITE_WS_BASE_URL ||
   API_BASE_URL.replace("/api/v1", "").replace(/^http/, "ws");
 
 async function request(path, options = {}) {
