@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  tidesense-db:
+    image: timescale/timescaledb:2.15.3-pg15
+    container_name: tidesense-db
+    restart: always
+    environment:
+      - POSTGRES_DB=tidesense
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=tidesense_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - tidesense-db-data:/var/lib/postgresql/data
+      - ./tidesense_full_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tidesense"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tidesense-backend:
+    image: tidesense_backend
+    container_name: tidesense-backend
+    restart: always
+    env_file:
+      - ./backend_kurtarilan/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend_kurtarilan:/app
+    depends_on:
+      tidesense-db:
+        condition: service_healthy
+
+  tidesense-worker:
+    image: tidesense_backend
+    container_name: tidesense-worker
+    restart: always
+    command: python worker.py
+    env_file:
+      - ./backend_kurtarilan/.env
+    volumes:
+      - ./backend_kurtarilan:/app
+    depends_on:
+      tidesense-db:
+        condition: service_healthy
+      tidesense-mqtt:
+        condition: service_started
+
+  tidesense-simulator:
+    image: tidesense_simulator
+    container_name: tidesense-simulator
+    restart: always
+    environment:
+      - MQTT_BROKER=tidesense-mqtt
+      - MQTT_PORT=1883
+      - POSTGRES_HOST=tidesense-db
+      - POSTGRES_DB=tidesense
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=tidesense_secret
+    depends_on:
+      tidesense-db:
+        condition: service_healthy
+      tidesense-mqtt:
+        condition: service_started
+
+  tidesense-frontend:
+    image: tidesense_frontend
+    container_name: tidesense-frontend
+    restart: always
+    volumes:
+      - ./frontend_kurtarilan:/usr/share/nginx/html
+
+  tidesense-proxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: tidesense-proxy
+    restart: always
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./npm/data:/data
+      - ./npm/letsencrypt:/etc/letsencrypt
+
+  tidesense-mqtt:
+    image: eclipse-mosquitto:2
+    container_name: tidesense-mqtt
+    restart: always
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - tidesense-mqtt-data:/mosquitto/data
+      - tidesense-mqtt-log:/mosquitto/log
+
+volumes:
+  tidesense-db-data:
+  tidesense-mqtt-data:
+  tidesense-mqtt-log:
